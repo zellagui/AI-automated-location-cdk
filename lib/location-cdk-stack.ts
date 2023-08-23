@@ -1,16 +1,85 @@
 import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+
+//LAMBDA
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+
+//API
+import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
+import {
+  HttpApi,
+  HttpMethod,
+  CorsHttpMethod,
+} from "@aws-cdk/aws-apigatewayv2-alpha";
+
+//Resource
+import * as path from "path";
+
+export const data_analysis_lambda = 'data_analysis_lambda';
+export const openAiRequest = 'openAi_Request';
 
 export class LocationCdkStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    //Post - LAMBDA
+    const data_lambda = new NodejsFunction(this, data_analysis_lambda, {
+			memorySize: 1024,
+			timeout: cdk.Duration.seconds(15),
+			runtime: lambda.Runtime.NODEJS_16_X,
+			handler: 'main',
+			entry: path.join(__dirname, '../src/lambda/data_analysis/data_analysis.ts'),
+		});
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'LocationCdkQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+	const openAiReq = new NodejsFunction(this, openAiRequest, {
+			memorySize: 1024,
+			timeout: cdk.Duration.seconds(15),
+			runtime: lambda.Runtime.NODEJS_16_X,
+			handler: 'main',
+			entry: path.join(__dirname, '../src/lambda/openAi_req/index.ts'),
+		});
+
+
+    // create Api
+		const httpApi = new HttpApi(this, "LocationFeature", {
+			description: "LocationFeature API",
+			corsPreflight: {
+			allowHeaders: [
+				"Content-Type",
+				"X-Amz-Date",
+				"Authorization",
+				"X-Api-Key",
+			],
+			allowMethods: [
+				CorsHttpMethod.OPTIONS,
+				CorsHttpMethod.GET,
+				CorsHttpMethod.POST,
+				CorsHttpMethod.PUT,
+				CorsHttpMethod.PATCH,
+				CorsHttpMethod.DELETE,
+			],
+			allowCredentials: true,
+			allowOrigins: ["http://localhost:8080"],
+			},
+		});
+
+     	httpApi.addRoutes({
+			path: "/audience",
+			methods: [HttpMethod.POST],
+			integration: new HttpLambdaIntegration(
+			  "post-newAudience",
+			  data_lambda
+			),
+		  });
+
+		  httpApi.addRoutes({
+			path: "/audience",
+			methods: [HttpMethod.PUT],
+			integration: new HttpLambdaIntegration(
+			  "post-openAi-Req",
+			  openAiReq
+			),
+		  });
+
   }
 }
