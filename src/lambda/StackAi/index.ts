@@ -29,17 +29,16 @@ export async function main(event: any) {
         const query = payloadValidation(event);
         const { varA, varB } = query;
 
-        const contactInfo = await apifyMedia(varB);
-        const searchResults = await apifySearchGoogleBusiness(varA);
+        // const contactInfo = await apifyMedia(varB);
+        // const searchResults = await apifySearchGoogleBusiness(varA);
 
-        const WebPresence = {
-            contactInfo,
-            searchResults,
-        };
+        // const WebPresence = {
+        //     contactInfo,
+        //     searchResults,
+        // };
 
-        console.log(WebPresence);
         console.log('program exit...');
-        return WebPresence;
+        return ;
     } catch (e: any) {
         let res = 'error';
         console.log(e);

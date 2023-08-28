@@ -48,8 +48,8 @@ export function getPayload(event: any ) {
 		  timeEpoch: 1679273245207
 		},
 		body: '{\n' +
-		  '    "varA" : "We selling used wheels for common car. ",\n' +
-		  '    "varB": "Want a clean and simple changment of their wheels for a advantageous price." \n' +
+		  '    "varA" : "https://oa.media",\n' +
+		  '    "varB": "Orangead Media" \n' +
 		  '}',
 		isBase64Encoded: false
 	  };
